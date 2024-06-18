@@ -30,6 +30,24 @@ ShellSweep includes a Get-Entropy function that calculates the entropy of a file
 - Using these frequencies to calculate the probability of each character.
 - Summing -p*log2(p) for each character, where p is the character's probability. This is the formula for entropy in information theory.
 
+## Feature Comparison
+
+| Feature/Aspect | ShellSweep | ShellSweepPlus |
+|----------------|------------|----------------|
+| Baseline Detection | Uses hardcoded entropy values for specific file extensions | Dynamic baseline detection that calculates entropy on-the-fly |
+| File Extensions | Processes files with extensions: .asp, .aspx, .asax, .jspx, .html, .ashx | Processes files with extensions: .asp, .ashx, .asax, .jspx, .html, .aspx |
+| Entropy Calculation | Calculates the entropy of file contents to detect potential webshells | Enhanced entropy-based detection, cross-referencing with suspicious keywords |
+| Exclusion Feature | Can exclude certain directories from scanning | Can exclude certain directories from scanning |
+| Hash Ignoring | Ignores files with specific hashes | Ignores files with specific hashes |
+| Output | If potential webshells are found, outputs file name, entropy value, and hash. Otherwise, prints "No evil identified today." | If potential webshells are found, outputs file name, entropy value, hash, last modified date, detection method, and confidence score in JSON format. Otherwise, prints "No potential webshells detected." |
+| Entropy & Standard Deviation | Uses entropy values | Computes the mean and standard deviation of entropy values for each file extension |
+| Mixed-Mode Detection | Not present | Uses a combination of entropy-based detection, standard deviation-based detection, and mixed-mode detection (utilizing standard deviation with hardcoded thresholds) |
+| Static Code Analysis | Not present | Pattern-based detection mechanism analyzing code statically to identify and flag known malicious patterns |
+| Heuristic Analysis | Not present | Introduces `Perform-HeuristicAnalysis` function to detect anomalies based on heuristic rules, enhancing the detection of zero-day webshells |
+| Detailed Result Presentation | Not present | Presents potential threats in a structured JSON format, including file path, entropy, standard deviation, hash, last modified date, detection method, and confidence score |
+| Comprehensive Logging | Not present | Incorporates `Write-Verbose` commands throughout the script for detailed logging and operational transparency |
+| Confidence Scoring | Not present | Calculates a confidence score based on the detection method and adjusts it based on the presence of suspicious patterns |
+| Modular Design | Not present | Utilizes separate functions for different tasks (e.g., `Process-File`, `Create-ResultObject`, `Adjust-ConfidenceScore`), promoting code reusability and maintainability |
 
 ## ShellScan
 ShellScan provides the ability to scan multiple known bad webshell directories and output the average, median, minimum and maximum entropy values by file extension.
@@ -77,6 +95,9 @@ First, choose your flavor: Python, PowerShell or Lua.
 
 If you made it here, this is the part where you iterate on tuning. Find new shell? Gather entropy and modify as needed. 
 
+## ShellSweepPlus
+
+Coming soon!
 
 ## Questions
 Feel free to open a Git issue.
