@@ -3,8 +3,8 @@
     Script Name: ShellSweepPlus.ps1
     Authors: Michael Haag
 
-    Version: 2.3
-    Last Modified: 06-18-2024
+    Version: 2.4
+    Last Modified: 06-24-2024
 
     Description:
         ShellSweepPlus is the ultimate guardian for your web environments, meticulously designed to detect and neutralize webshells with unparalleled precision. Here are the enhanced features:
@@ -1819,8 +1819,6 @@ $suspiciousPatterns = @(
 # Define heuristic rules for heuristic analysis
 $heuristicRules = @(
     @{ 'pattern' = 'eval\('; 'description' = 'Use of eval function' },
-    @{ 'pattern' = 'base64_decode\('; 'description' = 'Use of base64_decode function' },
-    @{ 'pattern' = 'shell_exec\('; 'description' = 'Use of shell_exec function' },
     @{ 'pattern' = 'proc_open\('; 'description' = 'Use of proc_open function' },
     @{ 'pattern' = 'popen\('; 'description' = 'Use of popen function' },
     @{ 'pattern' = 'passthru\('; 'description' = 'Use of passthru function' },
@@ -1889,7 +1887,6 @@ $heuristicRules = @(
     @{ 'pattern' = 'getenv\('; 'description' = 'Use of getenv function' },
     @{ 'pattern' = 'mail\('; 'description' = 'Use of mail function' },
     @{ 'pattern' = 'mb_send_mail\('; 'description' = 'Use of mb_send_mail function' },
-    @{ 'pattern' = 'fsockopen\('; 'description' = 'Use of fsockopen function' },
     @{ 'pattern' = 'pfsockopen\('; 'description' = 'Use of pfsockopen function' },
     @{ 'pattern' = 'stream_socket_client\('; 'description' = 'Use of stream_socket_client function' },
     @{ 'pattern' = 'stream_socket_server\('; 'description' = 'Use of stream_socket_server function' },
@@ -1935,6 +1932,61 @@ $heuristicRules = @(
     @{ 'pattern' = 'ReflectionParameter\('; 'description' = 'Use of ReflectionParameter' },
     @{ 'pattern' = 'ReflectionExtension\('; 'description' = 'Use of ReflectionExtension' },
     @{ 'pattern' = 'ReflectionZendExtension\('; 'description' = 'Use of ReflectionZendExtension' }
+    @{ 'pattern' = '\$_(GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Direct use of user input' },
+    @{ 'pattern' = 'move_uploaded_file\('; 'description' = 'File upload handling' },
+    @{ 'pattern' = 'preg_replace\s*\(\s*([\'"`]).*?\\1\s*,\s*([\'"`]).*?\\2\s*,\s*\$'; 'description' = 'Potential code execution via preg_replace' },
+    @{ 'pattern' = 'function\s+__destruct'; 'description' = 'Use of __destruct magic method' },
+    @{ 'pattern' = 'function\s+__wakeup'; 'description' = 'Use of __wakeup magic method' },
+    @{ 'pattern' = 'pcntl_exec\('; 'description' = 'Use of pcntl_exec function' },
+    @{ 'pattern' = 'posix_setuid\('; 'description' = 'Use of posix_setuid function' },
+    @{ 'pattern' = 'posix_setgid\('; 'description' = 'Use of posix_setgid function' },
+    @{ 'pattern' = 'ini_alter\('; 'description' = 'Use of ini_alter function' },
+    @{ 'pattern' = 'dl\('; 'description' = 'Use of dl function for dynamic loading' },
+    @{ 'pattern' = 'openlog\('; 'description' = 'Use of openlog function' },
+    @{ 'pattern' = 'syslog\('; 'description' = 'Use of syslog function' },
+    @{ 'pattern' = 'define_syslog_variables\('; 'description' = 'Use of define_syslog_variables function' },
+    @{ 'pattern' = 'pcntl_alarm\('; 'description' = 'Use of pcntl_alarm function' },
+    @{ 'pattern' = 'pcntl_fork\('; 'description' = 'Use of pcntl_fork function' },
+    @{ 'pattern' = 'posix_kill\('; 'description' = 'Use of posix_kill function' },
+    @{ 'pattern' = 'posix_mkfifo\('; 'description' = 'Use of posix_mkfifo function' },
+    @{ 'pattern' = 'posix_setpgid\('; 'description' = 'Use of posix_setpgid function' },
+    @{ 'pattern' = 'posix_setsid\('; 'description' = 'Use of posix_setsid function' },
+    @{ 'pattern' = 'posix_setuid\('; 'description' = 'Use of posix_setuid function' },
+    @{ 'pattern' = 'proc_nice\('; 'description' = 'Use of proc_nice function' },
+    @{ 'pattern' = 'proc_terminate\('; 'description' = 'Use of proc_terminate function' },
+    @{ 'pattern' = 'proc_close\('; 'description' = 'Use of proc_close function' },
+    @{ 'pattern' = 'pfsockopen\('; 'description' = 'Use of pfsockopen function' },
+    @{ 'pattern' = 'fsockopen\('; 'description' = 'Use of fsockopen function' },
+    @{ 'pattern' = 'apache_child_terminate\('; 'description' = 'Use of apache_child_terminate function' },
+    @{ 'pattern' = 'posix_kill\('; 'description' = 'Use of posix_kill function' },
+    @{ 'pattern' = 'gzinflate\(base64_decode\('; 'description' = 'Nested use of gzinflate and base64_decode' },
+    @{ 'pattern' = 'base64_decode\(strrev\('; 'description' = 'Nested use of base64_decode and strrev' },
+    @{ 'pattern' = 'substr\(md5\('; 'description' = 'Nested use of substr and md5' },
+    @{ 'pattern' = 'preg_replace\s*\(\s*([\'"`])/e\\1'; 'description' = 'Use of preg_replace with /e modifier' },
+    @{ 'pattern' = '\$\w+\s*=\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Assignment of user input to variables' },
+    @{ 'pattern' = 'file_put_contents\s*\([^,]+,\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Writing user input to files' },
+    @{ 'pattern' = 'fwrite\s*\([^,]+,\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Writing user input to files using fwrite' },
+    @{ 'pattern' = '\b(?:exec|system|passthru|shell_exec)\s*\(\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Execution of user input' },
+    @{ 'pattern' = 'eval\s*\(\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Evaluation of user input' },
+    @{ 'pattern' = 'assert\s*\(\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Assertion of user input' },
+    @{ 'pattern' = '(?:include|require|include_once|require_once)\s*\(\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Inclusion of user-controlled files' },
+    @{ 'pattern' = '\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\[.+?\]\s*\('; 'description' = 'Execution of user-controlled function names' },
+    @{ 'pattern' = 'preg_replace\s*\(\s*([\'"`]).*?\\1\s*,\s*([\'"`]).*?\\2\s*,\s*\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Potential code execution via preg_replace with user input' },
+    @{ 'pattern' = '`.*?\$_(?:GET|POST|REQUEST|COOKIE|SERVER)\['; 'description' = 'Potential command injection via backticks' },
+    @{ 'pattern' = 'ob_start\s*\(\s*[\'"]ob_gzhandler[\'"]'; 'description' = 'Use of ob_gzhandler, potential for data exfiltration' },
+    @{ 'pattern' = 'curl_exec\s*\(\s*\$'; 'description' = 'Dynamic use of curl_exec' },
+    @{ 'pattern' = 'file_get_contents\s*\(\s*[\'"]php://input[\'"]'; 'description' = 'Reading raw POST data' },
+    @{ 'pattern' = 'error_reporting\s*\(\s*0\s*\)'; 'description' = 'Disabling error reporting' },
+    @{ 'pattern' = '@error_reporting\s*\(\s*0\s*\)'; 'description' = 'Silently disabling error reporting' },
+    @{ 'pattern' = 'set_time_limit\s*\(\s*0\s*\)'; 'description' = 'Removing execution time limit' },
+    @{ 'pattern' = 'ignore_user_abort\s*\(\s*true\s*\)'; 'description' = 'Ignoring user aborts' },
+    @{ 'pattern' = 'ini_set\s*\(\s*[\'"]max_execution_time[\'"]'; 'description' = 'Modifying max execution time' },
+    @{ 'pattern' = 'php://filter'; 'description' = 'Use of php filter, potential for LFI' },
+    @{ 'pattern' = 'data://'; 'description' = 'Use of data URI, potential for code injection' },
+    @{ 'pattern' = 'php://input'; 'description' = 'Use of php input stream' },
+    @{ 'pattern' = 'expect://'; 'description' = 'Use of expect wrapper, potential for command execution' },
+    @{ 'pattern' = 'glob://'; 'description' = 'Use of glob wrapper' },
+    @{ 'pattern' = 'phar://'; 'description' = 'Use of phar wrapper, potential for deserialization attacks' }
 )
 
 # Calculate the entropy of a given string
