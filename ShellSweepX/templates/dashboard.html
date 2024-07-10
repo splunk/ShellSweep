@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShellSweepX Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">ShellSweepX</div>
+            <nav>
+                <a href="/" class="active">Dashboard</a>
+                <a href="/analysis">Analysis</a>
+                <a href="/agents">Agents</a>
+                <a href="/settings">Settings</a>
+            </nav>
+        </header>
+        
+        <main>
+            <h1>Webshell Detection Dashboard</h1>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-title">Webshells Detected</div>
+                    <div class="card-value webshells-detected">{{ webshells_detected }}</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-title">Files Scanned</div>
+                    <div class="card-value files-scanned">{{ files_scanned }}</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-title">Detection Rate</div>
+                    <div class="card-value detection-rate">{{ detection_rate }}%</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-title">Active Agents (24h)</div>
+                    <div class="card-value active-agents">{{ recent_agent_count }}</div>
+                </div>
+            </div>
+
+            <div class="data-visualization">
+                <div class="chart-container">
+                    <canvas id="detectionTrendChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="webshellTypesPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="recent-detections">
+                <h2>Recent Detections</h2>
+                <div id="detections-list"></div>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="last-updated-time"></span>
+            </div>
+        </main>
+        
+        <footer>
+            ShellSweepX © 2024 | Webshell Detection & Analysis | <a href="https://github.com/splunk/ShellSweep" target="_blank" style="color: #00ffff;">ShellSweep on GitHub</a>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', path='/js/dashboard.js') }}"></script>
+</body>
+</html>

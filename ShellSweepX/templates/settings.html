@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShellSweepX Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">ShellSweepX</div>
+            <nav>
+                <a href="/">Dashboard</a>
+                <a href="/analysis">Analysis</a>
+                <a href="/agents">Agents</a>
+                <a href="/settings" class="active">Settings</a>
+            </nav>
+        </header>
+        
+        <main>
+            <h1>Settings</h1>
+            {% if message %}
+            <div class="alert {% if 'invalid' in message %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endif %}
+            <form action="/save_settings" method="post" class="settings-form" enctype="application/x-www-form-urlencoded">
+                <div class="form-group">
+                    <label for="gpt_api_key">GPT API Key:</label>
+                    <input type="password" id="gpt_api_key" name="gpt_api_key" value="{{ settings.gpt_api_key }}">
+                    {% if settings.gpt_api_key %}<span class="key-indicator">✓</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="claude_api_key">Claude API Key:</label>
+                    <input type="password" id="claude_api_key" name="claude_api_key" value="{{ settings.claude_api_key }}">
+                    {% if settings.claude_api_key %}<span class="key-indicator">✓</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="ai_prompt">AI Prompt:</label>
+                    <textarea id="ai_prompt" name="ai_prompt" rows="5">{{ settings.ai_prompt }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="yara_enabled">Enable Yara:</label>
+                    <input type="checkbox" id="yara_enabled" name="yara_enabled" {% if settings.yara_enabled %}checked{% endif %}>
+                </div>
+                <button type="submit" class="action-button">Save Settings</button>
+            </form>
+
+            <button type="button" id="scan-database" class="action-button">Scan Database with YARA Rules</button>
+
+            <div class="form-group">
+                <h3>YARA Rules</h3>
+                <ul id="yara-rules-list">
+                    {% for filename, rule_info in yara_rules.items() %}
+                    <li>
+                        <span class="rule-name">{{ filename }}</span>
+                        {% if rule_info.is_valid %}
+                        <span class="validation-status valid">✓</span>
+                        {% else %}
+                        <span class="validation-status invalid">✗</span>
+                        {% endif %}
+                        <button type="button" class="view-rule" data-filename="{{ filename }}" data-content="{{ rule_info.content | replace('"', '&quot;') }}">View</button>
+                        <button type="button" class="delete-rule" data-filename="{{ filename }}">Delete</button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <button type="button" id="add-new-rule">Add New Rule</button>
+            </div>
+            <div id="rule-viewer" style="display: none;">
+                <h3 id="rule-viewer-title">View YARA Rule</h3>
+                <input type="text" id="rule-filename">
+                <textarea id="rule-content" rows="10" cols="50"></textarea>
+                <button type="button" id="save-rule">Save</button>
+                <button type="button" id="close-viewer">Close</button>
+            </div>
+        </main>
+        
+        <footer>
+            ShellSweepX © 2024 | Webshell Detection & Analysis | <a href="https://github.com/splunk/ShellSweep" target="_blank" style="color: #00ffff;">ShellSweep on GitHub</a>
+        </footer>
+    </div>
+    <script>
+        function viewRule(filename, content) {
+            document.getElementById('rule-viewer-title').textContent = 'View YARA Rule';
+            document.getElementById('rule-filename').value = filename;
+            document.getElementById('rule-content').value = content;
+            document.getElementById('rule-viewer').style.display = 'block';
+        }
+
+        function closeViewer() {
+            document.getElementById('rule-viewer').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewButtons = document.querySelectorAll('#yara-rules-list button[data-filename]');
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filename = this.getAttribute('data-filename');
+                    const content = this.getAttribute('data-content');
+                    viewRule(filename, content);
+                });
+            });
+
+            document.getElementById('add-new-rule').addEventListener('click', function() {
+                viewRule('', '');
+            });
+        });
+    </script>
+    <script>
+        document.getElementById('scan-database').addEventListener('click', function() {
+            fetch('/scan_database_with_yara', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while scanning the database.');
+                });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rulesList = document.getElementById('yara-rules-list');
+            const ruleViewer = document.getElementById('rule-viewer');
+            const ruleFilename = document.getElementById('rule-filename');
+            const ruleContent = document.getElementById('rule-content');
+            const addNewRuleBtn = document.getElementById('add-new-rule');
+            const saveRuleBtn = document.getElementById('save-rule');
+            const closeViewerBtn = document.getElementById('close-viewer');
+
+            function viewRule(filename, content) {
+                ruleViewer.style.display = 'block';
+                ruleFilename.value = filename;
+                ruleContent.value = content;
+                ruleFilename.readOnly = true;
+                ruleViewer.dataset.mode = 'view';
+            }
+
+            function addNewRule() {
+                ruleViewer.style.display = 'block';
+                ruleFilename.value = '';
+                ruleContent.value = '';
+                ruleFilename.readOnly = false;
+                ruleViewer.dataset.mode = 'add';
+            }
+
+            function closeViewer() {
+                ruleViewer.style.display = 'none';
+            }
+
+            function saveRule() {
+                const filename = ruleFilename.value;
+                const content = ruleContent.value;
+                const mode = ruleViewer.dataset.mode;
+
+                if (!filename || !content) {
+                    alert('Please provide both filename and content for the YARA rule.');
+                    return;
+                }
+
+                const endpoint = mode === 'add' ? '/add_yara_rule' : '/update_yara_rule';
+                
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ filename, content }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving the YARA rule.');
+                });
+            }
+
+            function deleteRule(filename) {
+                if (confirm(`Are you sure you want to delete the YARA rule "${filename}"?`)) {
+                    fetch('/delete_yara_rule', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ filename }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the YARA rule.');
+                    });
+                }
+            }
+
+            rulesList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('view-rule')) {
+                    const filename = e.target.dataset.filename;
+                    const content = e.target.dataset.content;
+                    viewRule(filename, content);
+                } else if (e.target.classList.contains('delete-rule')) {
+                    const filename = e.target.dataset.filename;
+                    deleteRule(filename);
+                }
+            });
+
+            addNewRuleBtn.addEventListener('click', addNewRule);
+            saveRuleBtn.addEventListener('click', saveRule);
+            closeViewerBtn.addEventListener('click', closeViewer);
+        });
+    </script>
+</body>
+</html>

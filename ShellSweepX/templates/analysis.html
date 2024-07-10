@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShellSweepX Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">ShellSweepX</div>
+            <nav>
+                <a href="/">Dashboard</a>
+                <a href="/analysis" class="active">Analysis</a>
+                <a href="/agents">Agents</a>
+                <a href="/settings">Settings</a>
+            </nav>
+        </header>
+        
+        <main>
+            <h1>Analysis</h1>
+            <div class="upload-section">
+                <h2>Upload Files for Analysis</h2>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="files" multiple>
+                    <button type="button" onclick="uploadFiles()" class="action-button">Analyze Files</button>
+                </form>
+            </div>
+            <div id="upload-results"></div>
+            <div class="search-section">
+                <h2>Search Analyzed Files</h2>
+                <form id="search-form" onsubmit="searchFiles(event)">
+                    <input type="text" id="search-input" placeholder='Search by hash, filename, result, etc.'>
+                    <button type="submit" class="action-button">Search</button>
+                </form>
+            </div>
+            <div id="search-results"></div>
+            <div id="pagination"></div>
+        </main>
+        
+        <footer>
+            ShellSweepX © 2024 | Webshell Detection & Analysis | <a href="https://github.com/splunk/ShellSweep" target="_blank" style="color: #00ffff;">ShellSweep on GitHub</a>
+        </footer>
+    </div>
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentQuery = '';
+
+        async function loadFiles(page = 1, query = '') {
+            const response = await fetch(`/search?query=${encodeURIComponent(query)}&page=${page}`);
+            const data = await response.json();
+            displayResults(data.results);
+            updatePagination(data.page, data.total_pages);
+            currentPage = data.page;
+            totalPages = data.total_pages;
+            currentQuery = query;
+        }
+
+        async function searchFiles(event) {
+            event.preventDefault();
+            const query = document.getElementById('search-input').value;
+            loadFiles(1, query);
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '';
+            results.forEach(result => {
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result-item';
+                resultElement.innerHTML = `
+                    <h3>${result.file_name || 'Unknown File'}</h3>
+                    <p>SHA256: <a href="https://www.virustotal.com/gui/file/${result.sha256}" target="_blank" style="color: white;">${result.sha256}</a>
+                        <button onclick="triageWithAI('${result.sha256}')" class="action-button">Triage with AI</button>
+                    </p>
+                    <p>Result: ${result.result || 'N/A'}</p>
+                    <p>File Size: ${result.file_size || 'N/A'} bytes</p>
+                    <p>Entropy: ${result.entropy ? result.entropy.toFixed(2) : 'N/A'}</p>
+                    <p>Standard Deviation: ${result.std_dev ? result.std_dev.toFixed(2) : 'N/A'}</p>
+                    <p>Submitted: ${result.submitted_timestamp ? new Date(result.submitted_timestamp).toLocaleString() : 'N/A'}</p>
+                    <p>Last Analyzed: ${result.last_analyzed_timestamp ? new Date(result.last_analyzed_timestamp).toLocaleString() : 'N/A'}</p>
+                    <p>Submitting Agent(s): ${result.submitting_agents ? result.submitting_agents : 'N/A'}</p>
+                    ${result.yara_matches ? `<p>YARA Matches: ${result.yara_matches}</p>` : ''}
+                    <details id="ai-analysis-${result.sha256}">
+                        <summary>AI Analysis</summary>
+                        <div class="ai-analysis-content">
+                            ${result.analysis ? result.analysis : 'No AI analysis available yet.'}
+                        </div>
+                    </details>
+                    <details>
+                        <summary>File Content</summary>
+                        <div class="code-container">
+                            <pre><code>${escapeHtml(result.content || '')}</code></pre>
+                        </div>
+                    </details>
+                `;
+                resultsDiv.appendChild(resultElement);
+            });
+        }
+
+        function updatePagination(page, totalPages) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            if (totalPages > 1) {
+                if (page > 1) {
+                    paginationDiv.innerHTML += `<button onclick="loadFiles(${page - 1}, '${currentQuery}')">Previous</button>`;
+                }
+                paginationDiv.innerHTML += `<span>Page ${page} of ${totalPages}</span>`;
+                if (page < totalPages) {
+                    paginationDiv.innerHTML += `<button onclick="loadFiles(${page + 1}, '${currentQuery}')">Next</button>`;
+                }
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Load all files on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiles();
+            document.getElementById('search-form').addEventListener('submit', searchFiles);
+        });
+
+        async function uploadFiles() {
+            const form = document.getElementById('upload-form');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                const result = await response.json();
+                displayUploadResults(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during upload');
+            }
+        }
+
+        function displayUploadResults(result) {
+            const resultsDiv = document.getElementById('upload-results');
+            resultsDiv.innerHTML = '';
+            
+            result.results.forEach(file => {
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result-item';
+                resultElement.innerHTML = `
+                    <h3>${file.filename}</h3>
+                    <p>Result: ${file.result}</p>
+                    <p>SHA256: ${file.sha256}</p>
+                `;
+                resultsDiv.appendChild(resultElement);
+            });
+        }
+
+        async function triageWithAI(sha256) {
+            const response = await fetch('/triage_with_ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sha256=${sha256}`
+            });
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+            } else {
+                const analysisDetails = document.getElementById(`ai-analysis-${sha256}`);
+                const analysisContent = analysisDetails.querySelector('.ai-analysis-content');
+                analysisContent.textContent = data.analysis;
+                analysisDetails.open = true;
+            }
+        }
+    </script>
+</body>
+</html>

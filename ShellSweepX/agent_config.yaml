@@ -1,0 +1,43 @@
+directory_paths:
+- C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\oab
+- C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\
+- C:\inetpub\
+- /tmp/shells/
+exclude_paths:
+- C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\15.1.1713\scripts
+- C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\Current\scripts\premium
+file_extensions:
+  .asax:
+  - operation: gt
+    value: 3.7288741494524
+  .ashx:
+  - operation: gt
+    value: 3.75840459657413
+  .asp:
+  - operation: lt
+    value: 0.805376867704514
+  - operation: gt
+    value: 5.51268104400858
+  .aspx:
+  - operation: lt
+    value: 0.805376867704514
+  - operation: gt
+    value: 4.15186444439319
+  .html:
+  - operation: gt
+    value: 4.8738392644771
+  .js:
+  - operation: gt
+    value: 4.25868439013462
+  .jsp:
+  - operation: gt
+    value: 4.40958415652662
+  .jspx:
+  - operation: gt
+    value: 4.87651397975203
+  .php:
+  - operation: gt
+    value: 4.23015141285636
+ignore_hashes:
+- FE3F0B4326FF9754CB8B61AA3CEFB465A5308658064EE51C41B0A8B50027728D
+- B6675117A7B174C3AA2510DDDEFF4221BA6E31005333F47C7239ED5D055BBBDD
