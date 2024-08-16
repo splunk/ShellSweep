@@ -62,7 +62,7 @@ $results = @()
 # Process each directory and file extension
 foreach ($DirectoryPath in $DirectoryPaths) {
     Get-ChildItem $DirectoryPath -Recurse -File | Where-Object { $_.Extension -in $fileExtensions } | foreach {
-        $content = Get-Content $_.FullName -Raw
+        $content = [System.IO.File]::ReadAllText($_.FullName)
         $entropy = Get-Entropy -String $content
         $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
         $lastModified = $_.LastWriteTime
