@@ -2175,7 +2175,8 @@ Write-Verbose "Gathering entropies from specified files..."
 foreach ($DirectoryPath in $DirectoryPaths) {
     if ($DirectoryPath -notin $excludePaths) {
         Get-ChildItem $DirectoryPath -Recurse -File | Where-Object { $_.Extension -in $fileExtensions.Keys } | ForEach-Object {
-            $content = [System.IO.File]::ReadAllText($_.FullName)
+            $content = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+            $content = $content -replace "`r`n|`r", "`n"
             if (-not [string]::IsNullOrEmpty($content)) {
                 $entropy = Get-Entropy -String $content
                 $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash

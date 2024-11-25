@@ -22,7 +22,7 @@
 
 function Get-Entropy {
     param(
-        [Parameter(Mandatory=$true, Position=0)] [string] $String
+        [Parameter(Mandatory = $true, Position = 0)] [string] $String
     )
 
     $length = $String.Length
@@ -30,7 +30,8 @@ function Get-Entropy {
     foreach ($symbol in $String.ToCharArray()) {
         if ($symbolFrequency.ContainsKey($symbol)) {
             $symbolFrequency[$symbol]++
-        } else {
+        }
+        else {
             $symbolFrequency.Add($symbol, 1)
         }
     }
@@ -45,7 +46,7 @@ function Get-Entropy {
 }
 
 # Define the array of directories to scan
-$directoryPaths = @('C:\Users\Administrator\Downloads\xl7dev\WebShell-master','C:\Users\Administrator\Downloads\webshells-master\webshells-master', 'C:\Users\Administrator\Downloads\webshell-master\webshell-master','C:\Users\Administrator\Desktop\10660311902')
+$directoryPaths = @('C:\Users\Administrator\Downloads\xl7dev\WebShell-master', 'C:\Users\Administrator\Downloads\webshells-master\webshells-master', 'C:\Users\Administrator\Downloads\webshell-master\webshell-master', 'C:\Users\Administrator\Desktop\10660311902')
 #$directoryPaths = @('C:\Users\Administrator\Downloads\proxyshell','C:\Users\Administrator\Desktop\10660311902\test')
 # Initialize a hashtable to store the entropy values by extension
 $entropyValuesByExtension = @{}
@@ -79,8 +80,9 @@ foreach ($extension in $entropyValuesByExtension.Keys) {
     $middleIndex = $sortedEntropyValues.Count / 2
     if ($sortedEntropyValues.Count % 2 -eq 0) {
         # If there is an even number of values, the median is the average of the two middle values
-        $medianEntropy = ($sortedEntropyValues[$middleIndex-1] + $sortedEntropyValues[$middleIndex]) / 2
-    } else {
+        $medianEntropy = ($sortedEntropyValues[$middleIndex - 1] + $sortedEntropyValues[$middleIndex]) / 2
+    }
+    else {
         # If there is an odd number of values, the median is the middle value
         $medianEntropy = $sortedEntropyValues[[Math]::Floor($middleIndex)]
     }
