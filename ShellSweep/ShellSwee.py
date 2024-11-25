@@ -5,7 +5,8 @@ from collections import Counter
 import datetime
 
 
-print("""\
+print(
+    """\
    _________         _________
   /         \       /         \   Normand
  /  /~~~~~\  \     /  /~~~~~\  \  Veilleux
@@ -19,39 +20,42 @@ print("""\
   ^
 
 ShellSwee.py
-""")
+"""
+)
 
 
 # file extensions and entropy thresholds
 file_extensions = {
-    '.asp': [('lt', 0.805376867704514), ('gt', 5.51268104400858)],
-    '.ashx': [('gt', 3.75840459657413)],
-    '.asax': [('gt', 3.7288741494524)],
-    '.jspx': [('gt', 4.87651397975203)],
-    '.html': [('gt', 4.8738392644771)],
-    '.aspx': [('lt', 0.805376867704514), ('gt', 4.15186444439319)],
-    '.php': [('gt', 4.23015141285636)],
-    '.jsp': [('gt', 4.40958415652662)],
-    '.js': [('gt', 4.25868439013462)]
+    ".asp": [("lt", 0.805376867704514), ("gt", 5.51268104400858)],
+    ".ashx": [("gt", 3.75840459657413)],
+    ".asax": [("gt", 3.7288741494524)],
+    ".jspx": [("gt", 4.87651397975203)],
+    ".html": [("gt", 4.8738392644771)],
+    ".aspx": [("lt", 0.805376867704514), ("gt", 4.15186444439319)],
+    ".php": [("gt", 4.23015141285636)],
+    ".jsp": [("gt", 4.40958415652662)],
+    ".js": [("gt", 4.25868439013462)],
 }
+
 
 # Calculate the entropy of a given string
 def get_entropy(input_string):
     probability = [float(x) / len(input_string) for x in Counter(input_string).values()]
-    return - sum(p * math.log(p, 2) for p in probability)
+    return -sum(p * math.log(p, 2) for p in probability)
+
 
 # Directories to scan
-directory_paths =  ['/opt/webshells']
+directory_paths = ["/opt/webshells"]
 
 # Directories to exclude
-exclude_paths = ['exclude_path1', 'exclude_path2', 'exclude_path3']
+exclude_paths = ["exclude_path1", "exclude_path2", "exclude_path3"]
 
 # File hashes to ignore.
-ignore_hashes = ['hash1', 'hash2', 'hash3']
+ignore_hashes = ["hash1", "hash2", "hash3"]
 
 # Check if ignore_hashes file exists, if yes then read the hashes from the file into an array
-if os.path.isfile('path_to_your_file.txt'):
-    with open('path_to_your_file.txt', 'r') as f:
+if os.path.isfile("path_to_your_file.txt"):
+    with open("path_to_your_file.txt", "r") as f:
         file_hashes = f.read().splitlines()
 
     # If the file_hashes list is not empty, use it instead of ignore_hashes
@@ -72,7 +76,7 @@ for directory_path in directory_paths:
                 # Skip if file is empty
                 if os.stat(full_path).st_size == 0:
                     continue
-                with open(full_path, 'r', errors='ignore') as f:
+                with open(full_path, "r", errors="ignore") as f:
                     content = f.read()
                     entropy = get_entropy(content)
                     hasher = hashlib.sha256()
@@ -80,18 +84,22 @@ for directory_path in directory_paths:
                     file_hash = hasher.hexdigest()
 
                     # get last modification time
-                    last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
+                    last_modified = datetime.datetime.fromtimestamp(
+                        os.path.getmtime(full_path)
+                    )
 
                     for extension, conditions in file_extensions.items():
                         if file.endswith(extension):
                             for operation, value in conditions:
                                 met_condition = False
-                                if operation == 'gt' and entropy > value:
+                                if operation == "gt" and entropy > value:
                                     met_condition = True
-                                elif operation == 'lt' and entropy < value:
+                                elif operation == "lt" and entropy < value:
                                     met_condition = True
                                 if met_condition and file_hash not in ignore_hashes:
-                                    print(f"Possible webshell found: {full_path}, Last Modified: {last_modified}, Entropy: {entropy}, Hash: {file_hash}")
+                                    print(
+                                        f"Possible webshell found: {full_path}, Last Modified: {last_modified}, Entropy: {entropy}, Hash: {file_hash}"
+                                    )
                                     webshell_found = True
 
 

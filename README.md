@@ -5,7 +5,7 @@
 
 ## Why ShellSweep
 
-"ShellSweep" is a PowerShell/Python/Lua tool designed to detect potential web shell files in a specified directory. 
+"ShellSweep" is a PowerShell/Python/Lua tool designed to detect potential web shell files in a specified directory.
 
 ShellSheep and it's suite of tools calculate the entropy of file contents to estimate the likelihood of a file being a web shell. High entropy indicates more randomness, which is a characteristic of encrypted or obfuscated codes often found in web shells.
 - It only processes files with certain extensions (.asp, .aspx, .asph, .php, .jsp), which are commonly used in web shells.
@@ -56,7 +56,7 @@ While ShellSweepX is not a replacement for a full-fledged EDR solution, it serve
 |----------------|------------|----------------|-------------|
 | Baseline Detection | Uses hardcoded entropy values for specific file extensions | Dynamic baseline detection that calculates entropy on-the-fly | Uses a combination of entropy-based detection and machine learning prediction |
 | File Extensions | Processes files with extensions: .asp, .aspx, .asax, .jspx, .html, .ashx | Processes files with extensions: .asp, .ashx, .asax, .jspx, .html, .aspx | Configurable file extensions through API |
-| Entropy Calculation | Calculates the entropy of file contents to detect potential web shells | Enhanced entropy-based detection, cross-referencing with suspicious keywords | Advanced entropy calculation with chunk-based analysis | 
+| Entropy Calculation | Calculates the entropy of file contents to detect potential web shells | Enhanced entropy-based detection, cross-referencing with suspicious keywords | Advanced entropy calculation with chunk-based analysis |
 | Exclusion Feature | Can exclude certain directories from scanning | Can exclude certain directories from scanning | Configurable exclusions through API |
 | Hash Ignoring | Ignores files with specific hashes | Ignores files with specific hashes | Configurable hash ignoring through API |
 | Output | If potential web shells are found, outputs file name, entropy value, and hash. Otherwise, prints "No evil identified today." | If potential web shells are found, outputs file name, entropy value, hash, last modified date, detection method, and confidence score in JSON format. Otherwise, prints "No potential web shells detected." | Detailed JSON output including file metadata, entropy, prediction results, and YARA matches |
@@ -82,7 +82,7 @@ Pass ShellScan.ps1 some directories of web shells, any size set. I used:
 - https://github.com/BlackArch/web shells
 - https://github.com/tarwich/jackal/blob/master/libraries/
 
-This will give a decent training set to get entropy values. 
+This will give a decent training set to get entropy values.
 
 Output example:
 
@@ -111,7 +111,7 @@ See ShellCSV.csv as example output.
 
 Blog: [Ghost in the Web Shell: Introducing ShellSweep](https://www.splunk.com/en_us/blog/security/ghost-in-the-web-shell-introducing-shellsweep.html)
 
-First, choose your flavor: Python, PowerShell or Lua. 
+First, choose your flavor: Python, PowerShell or Lua.
 
 - Based on results from ShellScan or ShellCSV, modify entropy values as needed.
 - Modify file extensions as needed. No need to look for ASPX on a non-ASPX app.
@@ -119,7 +119,7 @@ First, choose your flavor: Python, PowerShell or Lua.
 - Modify any filters needed.
 - Run it!
 
-If you made it here, this is the part where you iterate on tuning. Find new shell? Gather entropy and modify as needed. 
+If you made it here, this is the part where you iterate on tuning. Find new shell? Gather entropy and modify as needed.
 
 ## ShellSweepPlus
 
@@ -150,7 +150,7 @@ Example output:
 json
 {
 "TotalFilesScanned": 1000,
-"Potentialweb shells": 5,
+"Potential web shells": 5,
 "ScanDuration": "00:05:30"
 }
 ```
@@ -163,4 +163,4 @@ Feel free to open a Git issue or check out the Wiki.
 
 ## Thank You
 
-If you enjoyed this project, be sure to star the project and share with your family and friends. 
+If you enjoyed this project, be sure to star the project and share with your family and friends.
