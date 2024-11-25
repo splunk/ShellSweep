@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShellSweepX Agents</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -17,7 +19,7 @@
                 <a href="/settings">Settings</a>
             </nav>
         </header>
-        
+
         <main>
             <h1>Agents</h1>
             <div class="agent-downloads">
@@ -25,15 +27,19 @@
                 <div class="os-section">
                     <h3>Windows</h3>
                     <ul>
-                        <li><a href="/static/agents/shellsweep_agent.ps1" download style="color: white; visited: #808080;">Windows Agent (PowerShell)</a></li>
-                        <li><a href="/static/agents/shellsweep_scan.ps1" download style="color: white; visited: #808080;">Windows Scan Script (PowerShell)</a></li>
+                        <li><a href="/agents/shellsweep_agent.ps1" download
+                                style="color: white; visited: #808080;">Windows Agent (PowerShell)</a></li>
+                        <li><a href="/agents/shellsweep_scan.ps1" download
+                                style="color: white; visited: #808080;">Windows Scan Script (PowerShell)</a></li>
                     </ul>
                 </div>
                 <div class="os-section">
                     <h3>Linux</h3>
                     <ul>
-                        <li><a href="/static/agents/shellsweep_scan.sh" download style="color: white; visited: #808080;">Linux Scan Script (Shell Script)</a></li>
-                        <li><a href="/static/agents/shellsweep_agent.py" download style="color: white; visited: #808080;">Linux Agent (Python)</a></li>
+                        <li><a href="/agents/shellsweep_scan.sh" download style="color: white; visited: #808080;">Linux
+                                Scan Script (Shell Script)</a></li>
+                        <li><a href="/agents/shellsweep_agent.py" download style="color: white; visited: #808080;">Linux
+                                Agent (Python)</a></li>
                     </ul>
                 </div>
             </div>
@@ -61,25 +67,30 @@
                     </div>
                     <div class="form-group">
                         <label for="directory-paths">Directories to Scan:</label>
-                        <textarea id="directory-paths" name="directory_paths" rows="5" class="expandable-textarea"></textarea>
+                        <textarea id="directory-paths" name="directory_paths" rows="5"
+                            class="expandable-textarea"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="exclude-paths">Exclude Paths:</label>
-                        <textarea id="exclude-paths" name="exclude_paths" rows="5" class="expandable-textarea"></textarea>
+                        <textarea id="exclude-paths" name="exclude_paths" rows="5"
+                            class="expandable-textarea"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="ignore-hashes">Ignore Hashes:</label>
-                        <textarea id="ignore-hashes" name="ignore_hashes" rows="5" class="expandable-textarea"></textarea>
+                        <textarea id="ignore-hashes" name="ignore_hashes" rows="5"
+                            class="expandable-textarea"></textarea>
                     </div>
                     <button type="submit" class="action-button">Save Configuration</button>
                 </form>
             </div>
         </main>
-        
+
         <footer>
-            ShellSweepX © 2024 | Webshell Detection & Analysis | <a href="https://github.com/splunk/ShellSweep" target="_blank" style="color: #00ffff;">ShellSweep on GitHub</a>
+            ShellSweepX © 2024 | Webshell Detection & Analysis | <a href="https://github.com/splunk/ShellSweep"
+                target="_blank" style="color: #00ffff;">ShellSweep on GitHub</a>
         </footer>
     </div>
     <script src="{{ url_for('static', path='/js/agents.js') }}" defer></script>
 </body>
+
 </html>

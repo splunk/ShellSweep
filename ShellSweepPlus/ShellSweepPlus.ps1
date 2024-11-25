@@ -55,26 +55,26 @@ Write-Output @"
 
 # Entropy thresholds and operations for each file extension using nested array of hashtables, each containing an 'operation' and a 'value'.
 $fileExtensions = @{
-    '.asp' = @(
+    '.asp'  = @(
         @{ 'operation' = 'lt'; 'value' = 0.805376867704514 },
-        @{ 'operation' = 'gt'; 'value' =  5.51268104400858 }
+        @{ 'operation' = 'gt'; 'value' = 5.51268104400858 }
     )
-    '.ashx' = @(@{ 'operation' = 'gt'; 'value' =  3.75840459657413 })
+    '.ashx' = @(@{ 'operation' = 'gt'; 'value' = 3.75840459657413 })
     '.asax' = @(@{ 'operation' = 'gt'; 'value' = 3.7288741494524 })
     '.jspx' = @(@{ 'operation' = 'gt'; 'value' = 4.87651397975203 })
     '.html' = @(@{ 'operation' = 'gt'; 'value' = 4.8738392644771 })
     '.aspx' = @(
         @{ 'operation' = 'lt'; 'value' = 0.805376867704514 },
-        @{ 'operation' = 'gt'; 'value' =  4.15186444439319 }
+        @{ 'operation' = 'gt'; 'value' = 4.15186444439319 }
     )
 }
 
 # Define weights for detection methods
 $weights = @{
-    'Entropy-based' = 0.5
+    'Entropy-based'            = 0.5
     'Standard Deviation-based' = 0.25
-    'Mixed Mode' = 0.15
-    'Heuristic-based' = 0.1
+    'Mixed Mode'               = 0.15
+    'Heuristic-based'          = 0.1
 }
 
 # Define suspicious patterns for static code analysis
@@ -1992,7 +1992,7 @@ $heuristicRules = @(
 # Calculate the entropy of a given string
 function Get-Entropy {
     param(
-        [Parameter(Mandatory=$true, Position=0)] [string] $String
+        [Parameter(Mandatory = $true, Position = 0)] [string] $String
     )
 
     $length = $String.Length
@@ -2000,7 +2000,8 @@ function Get-Entropy {
     foreach ($symbol in $String.ToCharArray()) {
         if ($symbolFrequency.ContainsKey($symbol)) {
             $symbolFrequency[$symbol]++
-        } else {
+        }
+        else {
             $symbolFrequency.Add($symbol, 1)
         }
     }
@@ -2016,7 +2017,7 @@ function Get-Entropy {
 
 function Detect-WebshellPatterns {
     param(
-        [Parameter(Mandatory=$true)] [string] $FileContent
+        [Parameter(Mandatory = $true)] [string] $FileContent
     )
 
     $matchedPatterns = @()
@@ -2032,7 +2033,7 @@ function Detect-WebshellPatterns {
 
 function Perform-HeuristicAnalysis {
     param(
-        [Parameter(Mandatory=$true)] [string] $FileContent
+        [Parameter(Mandatory = $true)] [string] $FileContent
     )
 
     $matchedHeuristics = @()
@@ -2060,11 +2061,11 @@ function Create-ResultObject {
     )
 
     $result = New-Object PSObject -Property @{
-        'FilePath' = $path
-        'Entropy' = $entropy
-        'StDev' = $sdForExt
-        'Hash' = $hash
-        'LastModified' = $lastModified
+        'FilePath'        = $path
+        'Entropy'         = $entropy
+        'StDev'           = $sdForExt
+        'Hash'            = $hash
+        'LastModified'    = $lastModified
         'DetectionMethod' = $detectionMethod
         'ConfidenceScore' = $confidenceScore
     }
@@ -2120,7 +2121,8 @@ function Process-File {
     if (Test-Path $path) {
         $lastModified = (Get-Item $path).LastWriteTime.ToString("yyyy-MM-ddTHH:mm:ssZ")
         $content = Get-Content $path -Raw -ErrorAction SilentlyContinue
-    } else {
+    }
+    else {
         $lastModified = ""
         $content = ""
     }
@@ -2133,19 +2135,20 @@ function Process-File {
         $result = Create-ResultObject -path $path -entropy $entropy -sdForExt $sdForExt -hash $hash -lastModified $lastModified -detectionMethod $detectionMethod -confidenceScore $confidenceScore -matchedPatterns $matchedPatterns -matchedHeuristics $matchedHeuristics
 
         $result | ConvertTo-Json -Compress
-    } else {
+    }
+    else {
         Write-Verbose "Skipping file $path as it could not be read."
     }
 }
 
 # Directories to scan
-$DirectoryPaths = @('C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\oab','C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\','C:\inetpub\wwwroot') 
+$DirectoryPaths = @('C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\oab', 'C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\', 'C:\inetpub\wwwroot') 
 
 # Directories to exclude
-$excludePaths = @('C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\15.1.1713\scripts','C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\Current\scripts\premium','C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\Current\scripts\','C:\Windows\WinSxS','C:\Program Files\Microsoft\Exchange Server\V15\ClientAccess\Owa\Current2\version\debug\scripts\','C:\Program Files\Microsoft\Exchange Server\V15\ClientAccess\ecp\Current\scripts\')
+$excludePaths = @('C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\15.1.1713\scripts', 'C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\Current\scripts\premium', 'C:\Program Files\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth\Current\scripts\', 'C:\Windows\WinSxS', 'C:\Program Files\Microsoft\Exchange Server\V15\ClientAccess\Owa\Current2\version\debug\scripts\', 'C:\Program Files\Microsoft\Exchange Server\V15\ClientAccess\ecp\Current\scripts\')
 
 # File hashes to ignore. If the list is too long, use the txt file next.
-$ignoreHashes = @('FE3F0B4326FF9754CB8B61AA3CEFB465A5308658064EE51C41B0A8B50027728D','B6675117A7B174C3AA2510DDDEFF4221BA6E31005333F47C7239ED5D055BBBDD', '54EFA324203B762A03033879057F8A9DB0F7B45C83C8E1A40529CAFF1EB18004','71FE41C6CCB0023576483A1C89929255480A4F5F0F07CFF9A8D2030ECF70E7AE')
+$ignoreHashes = @('FE3F0B4326FF9754CB8B61AA3CEFB465A5308658064EE51C41B0A8B50027728D', 'B6675117A7B174C3AA2510DDDEFF4221BA6E31005333F47C7239ED5D055BBBDD', '54EFA324203B762A03033879057F8A9DB0F7B45C83C8E1A40529CAFF1EB18004', '71FE41C6CCB0023576483A1C89929255480A4F5F0F07CFF9A8D2030ECF70E7AE')
 
 # Path to a txt file containing hashes to ignore
 $ignoreHashesFilePath = Join-Path $PSScriptRoot "ignore.txt"
@@ -2172,7 +2175,8 @@ Write-Verbose "Gathering entropies from specified files..."
 foreach ($DirectoryPath in $DirectoryPaths) {
     if ($DirectoryPath -notin $excludePaths) {
         Get-ChildItem $DirectoryPath -Recurse -File | Where-Object { $_.Extension -in $fileExtensions.Keys } | ForEach-Object {
-            $content = [System.IO.File]::ReadAllText($_.FullName)
+            $content = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+            $content = $content -replace "`r`n|`r", "`n"
             if (-not [string]::IsNullOrEmpty($content)) {
                 $entropy = Get-Entropy -String $content
                 $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
@@ -2185,13 +2189,14 @@ foreach ($DirectoryPath in $DirectoryPaths) {
                 $entropiesPerExtension[$extension] += $entropy
 
                 $fileInfo = @{
-                    'Path' = $_.FullName
+                    'Path'    = $_.FullName
                     'Entropy' = $entropy
-                    'Hash' = $hash
+                    'Hash'    = $hash
                 }
                 $allFiles += $fileInfo
                 $totalFilesScanned++
-            } else {
+            }
+            else {
                 Write-Verbose "Skipping file $($_.FullName) as it could not be read."
             }
         }
@@ -2213,11 +2218,11 @@ foreach ($extension in $entropiesPerExtension.Keys) {
     $sdEntropy = [Math]::Sqrt($meanOfSquaredDifferences)
 
     $statsPerExtension[$extension] = @{
-        'Mean' = $meanEntropy
+        'Mean'              = $meanEntropy
         'StandardDeviation' = $sdEntropy
     }
 }
-$x = 2
+
 
 Write-Verbose "Performing entropy-based detection..."
 
@@ -2262,9 +2267,9 @@ if (-not $webshellFound) {
 $scanEndTime = Get-Date
 $scanDuration = $scanEndTime - $scanStartTime
 $scanStats = @{
-    'TotalFilesScanned' = $totalFilesScanned
+    'TotalFilesScanned'  = $totalFilesScanned
     'PotentialWebshells' = $potentialWebshells
-    'ScanDuration' = $scanDuration
+    'ScanDuration'       = $scanDuration
 }
 
 Write-Output "Scan completed. Statistics:"

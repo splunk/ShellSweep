@@ -41,18 +41,21 @@ CONFIG_PATH = os.path.join(os.path.expanduser("~"), ".shellsweep_config.yaml")
 AGENT_ID_FILE = os.path.join(os.path.expanduser("~"), ".shellsweep_agent_id")
 LAST_SCAN_FILE = os.path.join(os.path.expanduser("~"), ".shellsweep_last_scan")
 
+
 def log_message(message):
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
 
+
 def get_agent_id():
     if os.path.exists(AGENT_ID_FILE):
-        with open(AGENT_ID_FILE, 'r') as f:
+        with open(AGENT_ID_FILE, "r") as f:
             return f.read().strip()
     else:
         new_agent_id = str(uuid.uuid4())
-        with open(AGENT_ID_FILE, 'w') as f:
+        with open(AGENT_ID_FILE, "w") as f:
             f.write(new_agent_id)
         return new_agent_id
+
 
 def get_configuration(server_url):
     try:
@@ -60,12 +63,13 @@ def get_configuration(server_url):
         response = requests.get(config_url)
         response.raise_for_status()
         config = response.json()
-        with open(CONFIG_PATH, 'w') as f:
+        with open(CONFIG_PATH, "w") as f:
             yaml.dump(config, f)
         return config
     except requests.RequestException as e:
         log_message(f"Failed to retrieve configuration: {e}")
         return None
+
 
 def calculate_entropy(data):
     if not data:
@@ -77,39 +81,43 @@ def calculate_entropy(data):
             entropy += -p_x * math.log2(p_x)
     return entropy
 
+
 def check_file_entropy(file_path, config):
-    with open(file_path, 'rb') as f:
+    with open(file_path, "rb") as f:
         content = f.read()
     entropy = calculate_entropy(content)
     log_message(f"File: {file_path}, Entropy: {entropy}")
 
     extension = os.path.splitext(file_path)[1]
-    conditions = config['file_extensions'].get(extension, [])
+    conditions = config["file_extensions"].get(extension, [])
 
     for condition in conditions:
-        operation = condition['operation']
-        value = condition['value']
-        if operation == 'gt' and entropy > value:
+        operation = condition["operation"]
+        value = condition["value"]
+        if operation == "gt" and entropy > value:
             return True
-        elif operation == 'lt' and entropy < value:
+        elif operation == "lt" and entropy < value:
             return True
-        elif operation == 'eq' and entropy == value:
+        elif operation == "eq" and entropy == value:
             return True
     return False
 
+
 def get_last_scan_time():
     if os.path.exists(LAST_SCAN_FILE):
-        with open(LAST_SCAN_FILE, 'r') as f:
+        with open(LAST_SCAN_FILE, "r") as f:
             return datetime.fromisoformat(f.read().strip())
     return None
 
+
 def set_last_scan_time():
-    with open(LAST_SCAN_FILE, 'w') as f:
+    with open(LAST_SCAN_FILE, "w") as f:
         f.write(datetime.now(timezone.utc).isoformat())
+
 
 def scan_directories(config, last_scan_time):
     results = []
-    for dir_path in config['directory_paths']:
+    for dir_path in config["directory_paths"]:
         log_message(f"Scanning directory: {dir_path}")
         if not os.path.isdir(dir_path):
             log_message(f"Warning: Directory not found: {dir_path}")
@@ -119,11 +127,13 @@ def scan_directories(config, last_scan_time):
             for file in files:
                 file_path = os.path.join(root, file)
                 extension = os.path.splitext(file)[1]
-                
-                if extension not in config['file_extensions']:
+
+                if extension not in config["file_extensions"]:
                     continue
 
-                if any(file_path.startswith(exclude) for exclude in config['exclude_paths']):
+                if any(
+                    file_path.startswith(exclude) for exclude in config["exclude_paths"]
+                ):
                     continue
 
                 file_stat = os.stat(file_path)
@@ -132,20 +142,23 @@ def scan_directories(config, last_scan_time):
                 if last_scan_time and file_mtime <= last_scan_time:
                     continue
 
-                file_hash = hashlib.sha256(open(file_path, 'rb').read()).hexdigest()
-                if file_hash in config['ignore_hashes']:
+                file_hash = hashlib.sha256(open(file_path, "rb").read()).hexdigest()
+                if file_hash in config["ignore_hashes"]:
                     log_message(f"Ignoring file with known hash: {file_path}")
                     continue
 
                 if check_file_entropy(file_path, config):
-                    results.append({
-                        'FilePath': file_path,
-                        'Hash': file_hash,
-                        'LastModified': file_mtime.isoformat(),
-                        'FileSize': file_stat.st_size
-                    })
+                    results.append(
+                        {
+                            "FilePath": file_path,
+                            "Hash": file_hash,
+                            "LastModified": file_mtime.isoformat(),
+                            "FileSize": file_stat.st_size,
+                        }
+                    )
 
     return results
+
 
 def send_results(results, server_url):
     agent_id = get_agent_id()
@@ -156,19 +169,21 @@ def send_results(results, server_url):
     failed_uploads = 0
 
     for result in results:
-        with open(result['FilePath'], 'rb') as f:
-            content = base64.b64encode(f.read()).decode('utf-8')
+        with open(result["FilePath"], "rb") as f:
+            content = base64.b64encode(f.read()).decode("utf-8")
 
         payload = {
-            'agent_id': agent_id,
-            'computer_name': computer_name,
-            'results': [{
-                'FilePath': result['FilePath'],
-                'Hash': result['Hash'],
-                'LastModified': result['LastModified'],
-                'FileSize': result['FileSize'],
-                'Content': content
-            }]
+            "agent_id": agent_id,
+            "computer_name": computer_name,
+            "results": [
+                {
+                    "FilePath": result["FilePath"],
+                    "Hash": result["Hash"],
+                    "LastModified": result["LastModified"],
+                    "FileSize": result["FileSize"],
+                    "Content": content,
+                }
+            ],
         }
 
         try:
@@ -180,16 +195,16 @@ def send_results(results, server_url):
             failed_uploads += 1
             log_message(f"Failed to send file: {result['FilePath']}. Error: {e}")
 
-    log_message(f"Upload summary: {successful_uploads}/{total_files} files sent successfully, {failed_uploads} failed.")
+    log_message(
+        f"Upload summary: {successful_uploads}/{total_files} files sent successfully, {failed_uploads} failed."
+    )
+
 
 def send_agent_checkin(server_url):
     agent_id = get_agent_id()
     computer_name = os.uname().nodename
 
-    payload = {
-        'agent_id': agent_id,
-        'computer_name': computer_name
-    }
+    payload = {"agent_id": agent_id, "computer_name": computer_name}
 
     try:
         response = requests.post(f"{server_url}/api/agent_checkin", json=payload)
@@ -198,9 +213,15 @@ def send_agent_checkin(server_url):
     except requests.RequestException as e:
         log_message(f"Failed to send agent check-in: {e}")
 
+
 def main():
-    parser = argparse.ArgumentParser(description="ShellSweep Agent - Scans directories for potential webshells and reports findings to a central server.")
-    parser.add_argument("server_url", help="The URL of the ShellSweep server to connect to for configuration and reporting.")
+    parser = argparse.ArgumentParser(
+        description="ShellSweep Agent - Scans directories for potential webshells and reports findings to a central server."
+    )
+    parser.add_argument(
+        "server_url",
+        help="The URL of the ShellSweep server to connect to for configuration and reporting.",
+    )
     args = parser.parse_args()
 
     config = get_configuration(args.server_url)
@@ -210,7 +231,9 @@ def main():
 
         last_scan_time = get_last_scan_time()
         if last_scan_time:
-            log_message(f"Performing subsequent scan for files modified after {last_scan_time.isoformat()}")
+            log_message(
+                f"Performing subsequent scan for files modified after {last_scan_time.isoformat()}"
+            )
         else:
             log_message("Performing initial scan of all files")
 
@@ -226,9 +249,11 @@ def main():
 
         set_last_scan_time()
     else:
-        log_message("Failed to retrieve configuration. Using last known good configuration.")
+        log_message(
+            "Failed to retrieve configuration. Using last known good configuration."
+        )
         if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, 'r') as f:
+            with open(CONFIG_PATH, "r") as f:
                 config = yaml.safe_load(f)
             log_message("Starting scan with last known configuration...")
             results = scan_directories(config, None)
@@ -244,6 +269,7 @@ def main():
         else:
             log_message("Error: No configuration available. Exiting.")
             sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

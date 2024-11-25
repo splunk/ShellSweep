@@ -23,7 +23,7 @@
 
 function Get-Entropy {
     param(
-        [Parameter(Mandatory=$true, Position=0)] [string] $String
+        [Parameter(Mandatory = $true, Position = 0)] [string] $String
     )
 
     $length = $String.Length
@@ -31,7 +31,8 @@ function Get-Entropy {
     foreach ($symbol in $String.ToCharArray()) {
         if ($symbolFrequency.ContainsKey($symbol)) {
             $symbolFrequency[$symbol]++
-        } else {
+        }
+        else {
             $symbolFrequency.Add($symbol, 1)
         }
     }
@@ -52,9 +53,9 @@ function Get-Entropy {
 #    'C:\inetpub\wwwroot'
 #)
 
-$directoryPaths = @('C:\Users\Administrator\Downloads\reGeorg-master\reGeorg-master','C:\Users\Administrator\Downloads\p0wny-shell-master','C:\Users\Administrator\Desktop\10684728197_human2_cisa_report','C:\Users\Administrator\Downloads\xl7dev\WebShell-master','C:\Users\Administrator\Downloads\webshells-master\webshells-master', 'C:\Users\Administrator\Downloads\webshell-master\webshell-master','C:\Users\Administrator\Desktop\10660311902')
+$directoryPaths = @('C:\Users\Administrator\Downloads\reGeorg-master\reGeorg-master', 'C:\Users\Administrator\Downloads\p0wny-shell-master', 'C:\Users\Administrator\Desktop\10684728197_human2_cisa_report', 'C:\Users\Administrator\Downloads\xl7dev\WebShell-master', 'C:\Users\Administrator\Downloads\webshells-master\webshells-master', 'C:\Users\Administrator\Downloads\webshell-master\webshell-master', 'C:\Users\Administrator\Desktop\10660311902')
 
-$fileExtensions = @('.aspx', '.asp', '.js', '.jsp', '.php','')
+$fileExtensions = @('.aspx', '.asp', '.js', '.jsp', '.php', '')
 
 # Initialize an array to store the results
 $results = @()
@@ -62,17 +63,18 @@ $results = @()
 # Process each directory and file extension
 foreach ($DirectoryPath in $DirectoryPaths) {
     Get-ChildItem $DirectoryPath -Recurse -File | Where-Object { $_.Extension -in $fileExtensions } | foreach {
-        $content = [System.IO.File]::ReadAllText($_.FullName)
+        $content = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+        $content = $content -replace "`r`n|`r", "`n"
         $entropy = Get-Entropy -String $content
         $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
         $lastModified = $_.LastWriteTime
 
         # Add the file's details to the results array
         $results += New-Object PSObject -Property @{
-            Date = Get-Date -Format "MM/dd/yyyy"
-            FullName = $_.FullName
-            Entropy = $entropy
-            Hash = $hash
+            Date         = Get-Date -Format "MM/dd/yyyy"
+            FullName     = $_.FullName
+            Entropy      = $entropy
+            Hash         = $hash
             LastModified = $lastModified
         }
     }

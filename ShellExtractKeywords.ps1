@@ -4,7 +4,7 @@
 # The suspicious words are then written to a file 'suspiciousPatterns.txt'.
 
 
- $webshellDirectoryPath = @(
+$webshellDirectoryPath = @(
     'C:\Users\Administrator\Downloads\reGeorg-master\reGeorg-master',
     'C:\Users\Administrator\Downloads\p0wny-shell-master',
     'C:\Users\Administrator\Desktop\10684728197_human2_cisa_report',
@@ -24,7 +24,8 @@ Get-ChildItem $webshellDirectoryPath -File | foreach {
     $content -split '\s+' | foreach {
         if ($wordFrequencyInDirectory.ContainsKey($_)) {
             $wordFrequencyInDirectory[$_]++
-        } else {
+        }
+        else {
             $wordFrequencyInDirectory.Add($_, 1)
         }
     }
